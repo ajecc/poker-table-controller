@@ -3,5 +3,4 @@
 *.log
 __pycache__/
 preflop_range/
-images/
 *.json
