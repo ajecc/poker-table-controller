@@ -10,19 +10,17 @@ import pytesseract
 import imagehash
 import cv2
 import time
-import easyocr
 
 IMAGE_NAME = 'capture.bmp'
 
 class WindowGrabber:
     def __init__(self, window_identifier_image_path, windows_identified):
-        self.reader = easyocr.Reader(['en'])
         self.window_identifier = cv2.imread(window_identifier_image_path)
-        self.window_identified = windows_identified
+        self.windows_identified = windows_identified
         self.poker_window = None
         self.poker_window_tid = None
         self.poker_window_pid = None
-    
+
     def get_window_area(self, tablemap_area, window_image):
         return window_image[tablemap_area.y: tablemap_area.y + tablemap_area.h - 1, 
                 tablemap_area.x: tablemap_area.x + tablemap_area.w - 1].copy()
@@ -33,6 +31,8 @@ class WindowGrabber:
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
         cropped = ~cropped
         cropped = cv2.GaussianBlur(cropped, (5, 5), 1)
+        cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+        cropped = Image.fromarray(cropped)
         conf = '-l eng'
         if 'button' in tablemap_area.label:
             conf = '-l eng --psm 6'
