@@ -4,3 +4,9 @@
 __pycache__/
 preflop_range/
 *.json
+User.dll
+temp/
+villain_range/
+debug/
+*.pdb
+*.ilk
