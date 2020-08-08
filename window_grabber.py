@@ -2,53 +2,63 @@ from PIL import Image
 import PIL.ImageOps
 import win32gui
 import win32ui
+import uuid
 import win32con
 import win32process
 from ctypes import windll
+from skimage.metrics import structural_similarity as ssim
 import numpy as np
 import pytesseract
 import imagehash
 import cv2
 import time
+import os
 
-IMAGE_NAME = 'capture.bmp'
 
 class WindowGrabber:
     def __init__(self, window_identifier_image_path, windows_identified):
+        self.IMAGE_NAME = os.path.join('temp', f'capture_{os.getpid()}.bmp') 
         self.window_identifier = cv2.imread(window_identifier_image_path)
         self.windows_identified = windows_identified
         self.poker_window = None
         self.poker_window_tid = None
         self.poker_window_pid = None
 
-    def get_window_area(self, tablemap_area, window_image):
+    @staticmethod
+    def get_window_area(tablemap_area, window_image):
         return window_image[tablemap_area.y: tablemap_area.y + tablemap_area.h - 1, 
                 tablemap_area.x: tablemap_area.x + tablemap_area.w - 1].copy()
        
     def get_window_area_text(self, tablemap_area, window_image):
-        cropped = self.get_window_area(tablemap_area, window_image)
-        cropped = cv2.resize(cropped, (0, 0), fx=4, fy=4)
+        cropped = WindowGrabber.get_window_area(tablemap_area, window_image)
+        cropped = cv2.resize(cropped, (0, 0), fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
         cropped = ~cropped
         cropped = cv2.GaussianBlur(cropped, (5, 5), 1)
         cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
+        low_white = np.array([150, 150, 150])
+        high_white = np.array([255, 255, 255])
+        mask = cv2.inRange(cropped, low_white, high_white)
+        cropped[mask > 0] = (255, 255, 255)
+        cropped[mask <= 0] = (0, 0, 0)
         cropped = Image.fromarray(cropped)
-        conf = '-l eng'
         if 'button' in tablemap_area.label:
-            conf = '-l eng --psm 6'
-        text = pytesseract.image_to_string(cropped, config=conf)
+            conf = '--psm 6'# -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$¢:.,'
+        else:
+            conf = '--psm 6'# -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$¢:.,'
+        text = pytesseract.image_to_string(cropped, config=conf, lang='eng')
         return text    
     
     def get_window_area_similarity(self, tablemap_area, window_image, other_image):
         return WindowGrabber.get_images_similarity(
-                self.get_window_area(tablemap_area, window_image), 
+                WindowGrabber.get_window_area(tablemap_area, window_image), 
                 other_image)
 
     def search_for_poker_window(self):
         hwnds = self.get_windows()
         for hwnd in hwnds:
             self.grab_image(hwnd)
-            candidate_window = cv2.imread(IMAGE_NAME)
+            candidate_window = cv2.imread(self.IMAGE_NAME)
             if WindowGrabber.get_images_similarity(candidate_window, self.window_identifier) > 0.95:
                 tid, pid = win32process.GetWindowThreadProcessId(hwnd)
                 if (hwnd, tid, pid) not in self.windows_identified:
@@ -102,16 +112,32 @@ class WindowGrabber:
         mfcDC.DeleteDC()
         win32gui.ReleaseDC(hwnd, hwndDC)
         if result == 1:
-            im.save(IMAGE_NAME)
+            im.save(self.IMAGE_NAME)
+
+    @staticmethod
+    def convert(img):
+        img = cv2.resize(img, (0, 0), fx=4, fy=4)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = ~img
+        img = cv2.GaussianBlur(img, (5, 5), 1)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        return img
 
     @staticmethod
     def get_images_similarity(lhs, rhs):
+        op = cv2.TM_SQDIFF_NORMED
         try:
-            res = cv2.matchTemplate(lhs, rhs, cv2.TM_SQDIFF_NORMED)
+            res = cv2.matchTemplate(lhs, rhs, op)
         except:
-            return 0
-        mn, _, _, _ = cv2.minMaxLoc(res)
-        return 1 - mn
+            lhs_h, lhs_w, _ = lhs.shape
+            rhs_h, rhs_w, _ = rhs.shape
+            h = max(lhs_h, rhs_h)
+            w = max(lhs_w, rhs_w)
+            lhs = cv2.resize(lhs, (h, w), interpolation=cv2.INTER_LINEAR)
+            rhs = cv2.resize(rhs, (h, w), interpolation=cv2.INTER_LINEAR)
+            res = cv2.matchTemplate(rhs, lhs, op)
+        mn, mx, _, _ = cv2.minMaxLoc(res)
+        return (1 - mn)
 
     @staticmethod
     def enum_windows_proc(hwnd, top_windows):
