@@ -30,7 +30,7 @@ A json file named `tablemap.json` that contains all the areas the controller sho
 
 ### Images
 
-The follwing images are necessary in order for the `Poker Table Controller` to work:
+The following images are necessary in order for the `Poker Table Controller` to work:
 - `identifier.PNG` 
     - an image that identifies that the scraped window belongs to a poker game
 - `<card_rank><card_suit>.PNG`
@@ -51,7 +51,7 @@ The follwing images are necessary in order for the `Poker Table Controller` to w
 - `is_hero_turn.PNG`
     - indicates it is the hero's turn
 - `is_not_hero_turn.PNG`
-    - indicates that is is not hero's turn
+    - indicates that it is not hero's turn
     - is compared against `is_hero_turn.PNG`
 - `seated.PNG`
     - indicates that the player is seated 
@@ -65,7 +65,7 @@ Every image must be a `PNG`. An example of how the images should look like can b
 
 ### DLL
 
-The DLL must be name `User.dll`.
+The DLL must be named `User.dll`.
 
 The DLL must expose 2 functions:
 ```C
@@ -78,7 +78,7 @@ For more info, see [ajecc/poker-user-dll](https://github.com/ajecc/poker-user-dl
 
 ### Dependencies
 
-Requieres x64 Python for Windows.
+Requires x64 Python for Windows.
 
 Install [Visual C++ Redistributable 2015-2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
