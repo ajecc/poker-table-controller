@@ -8,5 +8,6 @@ User.dll
 temp/
 villain_range/
 debug/
+images/
 *.pdb
 *.ilk
