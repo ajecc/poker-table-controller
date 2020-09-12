@@ -78,9 +78,11 @@ For more info, see [ajecc/poker-user-dll](https://github.com/ajecc/poker-user-dl
 
 ### Dependencies
 
-To install the dependencies, run `py -3 -m pip install -r requirements.txt`.
+Install [Visual C++ Redistributable 2015-2019](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
-Note that [tesseract](https://github.com/tesseract-ocr/tesseract) also needs to be installed.
+Install [tesseract](https://github.com/tesseract-ocr/tesseract).
+
+Now run `py -3 -m pip install -r requirements.txt`.
 
 ---
 
