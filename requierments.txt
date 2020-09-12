@@ -1,0 +1,8 @@
+munch
+pillow
+pywin32
+scikit-image
+pytesseract
+imagehash
+opencv-python
+pyautogui
