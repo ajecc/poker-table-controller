@@ -16,6 +16,8 @@ class TablemapClicker:
     def find_button(self, button_name):
         for tablemap_area in self.tablemap.tablemap_areas:
             if ('button' in tablemap_area.label) and (button_name in self.symbols[tablemap_area.label].lower()):
+                if 'fold' in button_name:
+                    tablemap_area.x += 27
                 return tablemap_area
         return None
     
@@ -34,8 +36,14 @@ class TablemapClicker:
     def fold(self):
         button = self.find_button('fold')
         if button is None:
-            print('could not find fold. breaking')
-            exit(-1)
+            print('could not find fold. defaulting to button0')
+            for tablemap_area in self.tablemap.tablemap_areas:
+                if 'button0' in tablemap_area.label:
+                    button = tablemap_area
+                    break
+            if button is None:
+                print('could not find button0')
+                exit(-1)
         print('fold')
         self.lock.acquire()
         self.movement.click_tablemap_area(button)
@@ -45,17 +53,11 @@ class TablemapClicker:
     def call(self):
         button = self.find_button('call')
         if button is None:
-            print('could not find call. checking')
-            self.check()
-            return
-        if button is None:
-            # TODO: make this one more general
-            # button = self.find_button('all in')
+            print('could not find call. defaulting to button1')
             for tablemap_area in self.tablemap.tablemap_areas:
                 if 'button1' in tablemap_area.label:
                     button = tablemap_area
                     break
-            print('all in')
             self.lock.acquire()
             self.movement.click_tablemap_area(button)
             self.movement.move_mouse(10, 10)
@@ -73,13 +75,13 @@ class TablemapClicker:
             button = self.find_button('raise')
         if button is None:
             button = self.find_button('all in')
+            if button is None:
+                self.call()
+                return
             self.lock.acquire()
             self.movement.click_tablemap_area(button)
             self.movement.move_mouse(10, 10)
             self.lock.release()
-            return
-        if button is None:
-            self.call()
             return
         if button is None:
             print('could not find bet/raise. checking')

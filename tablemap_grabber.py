@@ -229,6 +229,7 @@ class TablemapGrabber:
         # NOTE: this might need tweaking depending on the poker platform used
         hero_turn = self.window_grabber.get_window_area_similarity(self.is_hero_turn_area, window_image, self.is_hero_turn_image)
         not_hero_turn = self.window_grabber.get_window_area_similarity(self.is_hero_turn_area, window_image, self.is_not_hero_turn_image) 
+        print(hero_turn, not_hero_turn)
         return hero_turn > not_hero_turn and hero_turn > 0.9
 
     def scrape_symbols(self, window_image):

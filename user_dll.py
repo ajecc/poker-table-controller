@@ -1,5 +1,7 @@
 import ctypes
 import os
+import time
+import random
 
 os.add_dll_directory(os.getcwd())
 
@@ -23,6 +25,7 @@ def _convert_to_bytes(string):
     return string
 
 def process_query(query):
+    time.sleep(random.uniform(0, 0.7))
     return process_query_(ctypes.c_char_p(_convert_to_bytes(query)))
 
 def update_symbols(symbols):
@@ -36,6 +39,5 @@ def update_symbols(symbols):
         symbols_str += f'{key}: {val}'
         if i != len(symbols) - 1:
             symbols_str += '\n'
-    print(symbols_str)
     symbols_str = _convert_to_bytes(symbols_str)
     return update_symbols_(ctypes.c_char_p(symbols_str))
